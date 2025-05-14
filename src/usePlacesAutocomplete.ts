@@ -12,9 +12,12 @@ export interface HookArgs {
   callbackName?: string;
   defaultValue?: string;
   initOnMount?: boolean;
+  usePlaces2025?: boolean;
 }
 
-type Suggestion = google.maps.places.AutocompletePrediction;
+type Suggestion =
+  | google.maps.places.AutocompletePrediction
+  | google.maps.places.AutocompleteSuggestion;
 
 type Status = `${google.maps.places.PlacesServiceStatus}` | "";
 
@@ -50,6 +53,7 @@ const usePlacesAutocomplete = ({
   callbackName,
   defaultValue = "",
   initOnMount = true,
+  usePlaces2025 = false,
 }: HookArgs = {}): HookReturn => {
   const [ready, setReady] = useState(false);
   const [value, setVal] = useState(defaultValue);
@@ -131,26 +135,54 @@ const usePlacesAutocomplete = ({
           return;
         }
       }
+      if (usePlaces2025 && google.maps.places.AutocompleteSuggestion) {
+        // TODO: need to update the request for new API
 
-      asRef.current?.getPlacePredictions(
-        { ...requestOptionsRef.current, input: val },
-        (data: Suggestion[] | null, status: Status) => {
-          setSuggestions({ loading: false, status, data: data || [] });
+        google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions()
+          .then(({ suggestions: suggestionData }) => {
+            setSuggestions({
+              loading: false,
+              status: "OK",
+              data: suggestionData,
+            });
+            if (cache) {
+              cachedData[val] = {
+                data: suggestionData,
+                maxAge: Date.now() + cache * 1000,
+              };
 
-          if (cache && status === "OK") {
-            cachedData[val] = {
-              data: data as Suggestion[],
-              maxAge: Date.now() + cache * 1000,
-            };
+              try {
+                sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
+              } catch (error) {
+                // Skip exception
+              }
+            }
+            return suggestionData;
+          })
+          .catch(() => {
+            // skipping exception
+          });
+      } else {
+        asRef.current?.getPlacePredictions(
+          { ...requestOptionsRef.current, input: val },
+          (data: Suggestion[] | null, status: Status) => {
+            setSuggestions({ loading: false, status, data: data || [] });
 
-            try {
-              sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
-            } catch (error) {
-              // Skip exception
+            if (cache && status === "OK") {
+              cachedData[val] = {
+                data: data as Suggestion[],
+                maxAge: Date.now() + cache * 1000,
+              };
+
+              try {
+                sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
+              } catch (error) {
+                // Skip exception
+              }
             }
           }
-        }
-      );
+        );
+      }
     }, debounce),
     [cache, cacheKey, clearSuggestions, requestOptionsRef]
   );

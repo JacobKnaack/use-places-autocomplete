@@ -70,3 +70,16 @@ export const getDetails = (args: GetDetailsArgs): DetailsResult => {
     });
   });
 };
+
+// TODO: add new API methods for 2025 Places API:
+type FetchFieldsArgs = {
+  id: string;
+  fields: Array<string>;
+  requestedLanguage?: string;
+};
+
+type FetchDieldsResult = any;
+
+export const fetchFields = (args: FetchFieldsArgs): FetchDieldsResult => {
+  // const Place = new window.google.maps.places.Place({});
+};
