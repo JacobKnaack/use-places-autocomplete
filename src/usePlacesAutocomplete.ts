@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 
 import useLatest from "./useLatest";
 import _debounce from "./debounce";
+import createAutocompleteRequest from "./createAutocompleteRequest";
 
 export interface HookArgs {
   requestOptions?: Omit<google.maps.places.AutocompletionRequest, "input">;
@@ -137,29 +138,35 @@ const usePlacesAutocomplete = ({
       }
       if (usePlaces2025 && google.maps.places.AutocompleteSuggestion) {
         // TODO: need to update the request for new API
-        // google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions()
-        //   .then(({ suggestions: suggestionData }) => {
-        //     setSuggestions({
-        //       loading: false,
-        //       status: "OK",
-        //       data: suggestionData,
-        //     });
-        //     if (cache) {
-        //       cachedData[val] = {
-        //         data: suggestionData,
-        //         maxAge: Date.now() + cache * 1000,
-        //       };
-        //       try {
-        //         sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
-        //       } catch (error) {
-        //         // Skip exception
-        //       }
-        //     }
-        //     return suggestionData;
-        //   })
-        //   .catch(() => {
-        //     // skipping exception
-        //   });
+        const request = createAutocompleteRequest(
+          requestOptionsRef.current,
+          val
+        );
+        google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
+          request
+        )
+          .then(({ suggestions: suggestionData }) => {
+            setSuggestions({
+              loading: false,
+              status: "OK",
+              data: suggestionData,
+            });
+            if (cache) {
+              cachedData[val] = {
+                data: suggestionData,
+                maxAge: Date.now() + cache * 1000,
+              };
+              try {
+                sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
+              } catch (error) {
+                // Skip exception
+              }
+            }
+            return suggestionData;
+          })
+          .catch(() => {
+            // skipping exception
+          });
       } else {
         asRef.current?.getPlacePredictions(
           { ...requestOptionsRef.current, input: val },
