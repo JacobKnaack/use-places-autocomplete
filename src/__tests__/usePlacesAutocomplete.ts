@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { renderHook, act } from "@testing-library/react-hooks";
 
 import usePlacesAutocomplete, {
@@ -30,6 +31,9 @@ const defaultSuggestions = {
   data: [],
 };
 const getPlacePredictions = jest.fn();
+const fetchAutocompleteSuggestions = jest.fn().mockResolvedValue({
+  suggestions: data,
+});
 const getMaps = (type = "success", d = data): any => ({
   maps: {
     places: {
@@ -46,6 +50,9 @@ const getMaps = (type = "success", d = data): any => ({
                 }, 500);
               };
       },
+      AutocompleteSuggestion: class {
+        static fetchAutocompleteSuggestions = fetchAutocompleteSuggestions;
+      },
     },
   },
 });
@@ -57,6 +64,21 @@ describe("usePlacesAutocomplete", () => {
     getPlacePredictions.mockClear();
     // @ts-expect-error
     _debounce.mockClear();
+  });
+
+  it("Should return suggestions using the new Places API", async () => {
+    const result = renderHelper({ usePlaces2025: true });
+    act(() => {
+      result.current.setValue("test-2025");
+    });
+    await act(async () => {
+      // eslint-disable-next-line compat/compat
+      await Promise.resolve();
+    });
+    expect(fetchAutocompleteSuggestions).toHaveBeenCalledWith(
+      expect.objectContaining({ input: "test-2025" })
+    );
+    expect(result.current.suggestions).toEqual(okSuggestions);
   });
 
   it('should set "callbackName" correctly', () => {
