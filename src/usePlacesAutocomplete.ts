@@ -63,7 +63,10 @@ const usePlacesAutocomplete = ({
     status: "",
     data: [],
   });
-  const asRef = useRef<google.maps.places.AutocompleteService>();
+  const asRef = useRef<
+    | google.maps.places.AutocompleteService
+    | google.maps.places.AutocompleteSuggestion
+  >();
   const requestOptionsRef = useLatest(requestOptions);
   const googleMapsRef = useLatest(googleMaps);
 
@@ -79,9 +82,19 @@ const usePlacesAutocomplete = ({
       return;
     }
 
-    asRef.current = new placesLib.AutocompleteService();
+    if (
+      usePlaces2025 &&
+      typeof placesLib.AutocompleteSuggestion === "function"
+    ) {
+      asRef.current = {} as google.maps.places.AutocompleteSuggestion;
+    } else if (typeof placesLib.AutocompleteService === "function") {
+      asRef.current = new placesLib.AutocompleteService();
+    } else {
+      console.error(loadApiErr);
+      return;
+    }
     setReady(true);
-  }, [googleMapsRef]);
+  }, [googleMapsRef, usePlaces2025]);
 
   const clearSuggestions = useCallback(() => {
     setSuggestions({ loading: false, status: "", data: [] });
@@ -167,27 +180,30 @@ const usePlacesAutocomplete = ({
           .catch(() => {
             // skipping exception
           });
-      } else {
-        asRef.current?.getPlacePredictions(
-          { ...requestOptionsRef.current, input: val },
-          (data: Suggestion[] | null, status: Status) => {
-            setSuggestions({ loading: false, status, data: data || [] });
+      } else if (
+          asRef.current &&
+          asRef.current instanceof google.maps.places.AutocompleteService
+        ) {
+          asRef.current?.getPlacePredictions(
+            { ...requestOptionsRef.current, input: val },
+            (data: Suggestion[] | null, status: Status) => {
+              setSuggestions({ loading: false, status, data: data || [] });
 
-            if (cache && status === "OK") {
-              cachedData[val] = {
-                data: data as Suggestion[],
-                maxAge: Date.now() + cache * 1000,
-              };
+              if (cache && status === "OK") {
+                cachedData[val] = {
+                  data: data as Suggestion[],
+                  maxAge: Date.now() + cache * 1000,
+                };
 
-              try {
-                sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
-              } catch (error) {
-                // Skip exception
+                try {
+                  sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
+                } catch (error) {
+                  // Skip exception
+                }
               }
             }
-          }
-        );
-      }
+          );
+        }
     }, debounce),
     [cache, cacheKey, clearSuggestions, requestOptionsRef]
   );
