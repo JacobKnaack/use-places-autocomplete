@@ -181,29 +181,29 @@ const usePlacesAutocomplete = ({
             // skipping exception
           });
       } else if (
-          asRef.current &&
-          asRef.current instanceof google.maps.places.AutocompleteService
-        ) {
-          asRef.current?.getPlacePredictions(
-            { ...requestOptionsRef.current, input: val },
-            (data: Suggestion[] | null, status: Status) => {
-              setSuggestions({ loading: false, status, data: data || [] });
+        asRef.current &&
+        asRef.current instanceof google.maps.places.AutocompleteService
+      ) {
+        asRef.current?.getPlacePredictions(
+          { ...requestOptionsRef.current, input: val },
+          (data: Suggestion[] | null, status: Status) => {
+            setSuggestions({ loading: false, status, data: data || [] });
 
-              if (cache && status === "OK") {
-                cachedData[val] = {
-                  data: data as Suggestion[],
-                  maxAge: Date.now() + cache * 1000,
-                };
+            if (cache && status === "OK") {
+              cachedData[val] = {
+                data: data as Suggestion[],
+                maxAge: Date.now() + cache * 1000,
+              };
 
-                try {
-                  sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
-                } catch (error) {
-                  // Skip exception
-                }
+              try {
+                sessionStorage.setItem(cacheKey, JSON.stringify(cachedData));
+              } catch (error) {
+                // Skip exception
               }
             }
-          );
-        }
+          }
+        );
+      }
     }, debounce),
     [cache, cacheKey, clearSuggestions, requestOptionsRef]
   );
