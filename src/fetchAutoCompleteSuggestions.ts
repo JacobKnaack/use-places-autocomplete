@@ -1,4 +1,4 @@
-type PlacesLib = {
+export type PlacesLib = {
   AutocompleteSuggestion?: {
     fetchAutocompleteSuggestions: (
       request: google.maps.places.AutocompleteRequest

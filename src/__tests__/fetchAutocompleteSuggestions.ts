@@ -25,4 +25,17 @@ describe("fetchAutocompleteSuggestions", () => {
       "Google Maps AutocompleteSuggestion API is not available. Make sure the Maps JavaScript API is loaded with the correct libraries."
     );
   });
+  it("Should throw an error if the API request fails", async () => {
+    const mockRequest = { input: "test-input" };
+    const mockApi = {
+      AutocompleteSuggestion: {
+        fetchAutocompleteSuggestions: jest
+          .fn()
+          .mockRejectedValue(new Error("API request failed")),
+      },
+    };
+    await expect(
+      fetchAutocompleteSuggestions(mockRequest, mockApi)
+    ).rejects.toThrow("API request failed");
+  });
 });

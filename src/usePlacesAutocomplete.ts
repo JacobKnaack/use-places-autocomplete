@@ -3,6 +3,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import useLatest from "./useLatest";
 import _debounce from "./debounce";
 import createAutocompleteRequest from "./createAutocompleteRequest";
+import fetchAutocompleteSuggestions from "./fetchAutocompleteSuggestions";
 
 export interface HookArgs {
   requestOptions?: Omit<google.maps.places.AutocompletionRequest, "input">;
@@ -82,11 +83,10 @@ const usePlacesAutocomplete = ({
       return;
     }
 
-    if (
-      usePlaces2025 &&
-      typeof placesLib.AutocompleteSuggestion === "function"
-    ) {
-      asRef.current = {} as google.maps.places.AutocompleteSuggestion;
+    if (usePlaces2025) {
+      asRef.current = (
+        googleMapsRef.current?.places || window.google.maps.places
+      ).AutocompleteSuggestion;
     } else if (typeof placesLib.AutocompleteService === "function") {
       asRef.current = new placesLib.AutocompleteService();
     } else {
@@ -149,24 +149,25 @@ const usePlacesAutocomplete = ({
           return;
         }
       }
-      if (usePlaces2025 && google.maps.places.AutocompleteSuggestion) {
-        // TODO: need to update the request for new API
+      if (usePlaces2025) {
         const request = createAutocompleteRequest(
           requestOptionsRef.current,
           val
         );
-        google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
-          request
-        )
-          .then(({ suggestions: suggestionData }) => {
+        fetchAutocompleteSuggestions(request, {
+          AutocompleteSuggestion: (
+            googleMapsRef.current?.places || window.google.maps.places
+          ).AutocompleteSuggestion,
+        })
+          .then((data) => {
             setSuggestions({
               loading: false,
               status: "OK",
-              data: suggestionData,
+              data,
             });
             if (cache) {
               cachedData[val] = {
-                data: suggestionData,
+                data,
                 maxAge: Date.now() + cache * 1000,
               };
               try {
@@ -175,7 +176,7 @@ const usePlacesAutocomplete = ({
                 // Skip exception
               }
             }
-            return suggestionData;
+            return data;
           })
           .catch(() => {
             // skipping exception
