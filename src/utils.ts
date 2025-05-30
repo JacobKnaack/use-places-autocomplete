@@ -52,6 +52,8 @@ type DetailsResult = Promise<google.maps.places.PlaceResult | null>;
 
 export const getDetailsErr =
   "💡 use-places-autocomplete: Please provide a place Id when using getDetails() either as a string or as part of an Autocomplete Prediction.";
+export const fetchFieldsErr =
+  "💡 use-places-autocomplete: Please provide a place Id when using fetchFields().";
 
 export const getDetails = (args: GetDetailsArgs): DetailsResult => {
   const PlacesService = new window.google.maps.places.PlacesService(
@@ -71,15 +73,23 @@ export const getDetails = (args: GetDetailsArgs): DetailsResult => {
   });
 };
 
-// TODO: add new API methods for 2025 Places API:
-// type FetchFieldsArgs = {
-//   id: string;
-//   fields: Array<string>;
-//   requestedLanguage?: string;
-// };
+interface FetchFieldsArgs extends google.maps.places.FetchFieldsRequest {
+  placeId: string;
+  requestedLanguage?: string;
+}
 
-// type FetchDieldsResult = any;
+type FetchFieldsResult = Promise<{ place: google.maps.places.Place } | null>;
 
-// export const fetchFields = (args: FetchFieldsArgs): FetchDieldsResult => {
-//   const Place = new window.google.maps.places.Place({});
-// };
+export const fetchFields = async (args: FetchFieldsArgs): FetchFieldsResult => {
+  if (!args.placeId) {
+    console.error(getDetailsErr);
+    return Promise.reject(new Error(fetchFieldsErr));
+  }
+  const place = new window.google.maps.places.Place({
+    id: args.placeId,
+    requestedLanguage: args.requestedLanguage || "en",
+  });
+  return place.fetchFields({
+    fields: args.fields,
+  });
+};
