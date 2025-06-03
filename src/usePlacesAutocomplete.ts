@@ -160,11 +160,7 @@ const usePlacesAutocomplete = ({
           ).AutocompleteSuggestion,
         })
           .then((data) => {
-            setSuggestions({
-              loading: false,
-              status: "OK",
-              data,
-            });
+            setSuggestions({ loading: false, status: "OK", data });
             if (cache) {
               cachedData[val] = {
                 data,
@@ -179,7 +175,11 @@ const usePlacesAutocomplete = ({
             return data;
           })
           .catch(() => {
-            // skipping exception
+            setSuggestions({
+              loading: false,
+              status: "UNKNOWN_ERROR",
+              data: [],
+            });
           });
       } else if (
         asRef.current &&
