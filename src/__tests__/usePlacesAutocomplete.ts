@@ -67,7 +67,7 @@ describe("usePlacesAutocomplete", () => {
   });
 
   it("Should return suggestions using the new Places API", async () => {
-    const result = renderHelper({ usePlaces2025: true });
+    const result = renderHelper({ useLegacy: false });
     act(() => {
       result.current.setValue("test-2025");
     });

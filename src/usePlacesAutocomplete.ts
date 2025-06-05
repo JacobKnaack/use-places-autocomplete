@@ -14,7 +14,7 @@ export interface HookArgs {
   callbackName?: string;
   defaultValue?: string;
   initOnMount?: boolean;
-  usePlaces2025?: boolean;
+  useLegacy?: boolean;
 }
 
 type Suggestion =
@@ -55,7 +55,7 @@ const usePlacesAutocomplete = ({
   callbackName,
   defaultValue = "",
   initOnMount = true,
-  usePlaces2025 = false,
+  useLegacy = true,
 }: HookArgs = {}): HookReturn => {
   const [ready, setReady] = useState(false);
   const [value, setVal] = useState(defaultValue);
@@ -83,7 +83,7 @@ const usePlacesAutocomplete = ({
       return;
     }
 
-    if (usePlaces2025) {
+    if (!useLegacy) {
       asRef.current = (
         googleMapsRef.current?.places || window.google.maps.places
       ).AutocompleteSuggestion;
@@ -94,7 +94,7 @@ const usePlacesAutocomplete = ({
       return;
     }
     setReady(true);
-  }, [googleMapsRef, usePlaces2025]);
+  }, [googleMapsRef, useLegacy]);
 
   const clearSuggestions = useCallback(() => {
     setSuggestions({ loading: false, status: "", data: [] });
@@ -149,7 +149,7 @@ const usePlacesAutocomplete = ({
           return;
         }
       }
-      if (usePlaces2025) {
+      if (!useLegacy) {
         const request = createAutocompleteRequest(
           requestOptionsRef.current,
           val
