@@ -210,6 +210,14 @@ const PlacesAutocomplete = () => {
 };
 ```
 
+## Choosing API Versions
+
+Now supporting the new Google Places API (2025). To use the new API make you have it activated in your Google developer account. Once activated you can opt-in to the new API features by specifying `useLegacy: false` in the hooks parameters:
+
+```js
+usePlacesAutocomplete({ useLegacy: false });
+```
+
 ## Lazily Initializing The Hook
 
 When loading the Google Maps Places API via a 3rd-party library, you may need to wait for the script to be ready before using this hook. However, you can lazily initialize the hook in the following ways, depending on your use case.
@@ -424,7 +432,7 @@ const PlacesAutocomplete = () => {
 
 ## Utility Functions
 
-We provide [getGeocode](#getgeocode), [getLatLng](#getlatlng), [getZipCode](#getzipcode), and [getDetails](#getdetails) utils for you to do geocoding and get geographic coordinates when needed.
+We provide [getGeocode](#getgeocode), [getLatLng](#getlatlng), [getZipCode](#getzipcode), and [getDetails](#getdetails) utils for you to do geocoding and get geographic coordinates when needed. We also now support [fetchFields](#fetchFields) from the new 2025 Places API.
 
 ### getGeocode
 
@@ -553,6 +561,52 @@ const PlacesAutocomplete = () => {
 
 - `parameter: object` - [the request](https://developers.google.com/maps/documentation/javascript/places#place_details_requests) of the PlacesService's `getDetails()` method. You must supply the `placeId` that you would like details about. If you do not specify any fields or omit the fields parameter you will get every field available.
 - `placeResult: object | null` - [the details](https://developers.google.com/maps/documentation/javascript/reference/places-service#PlaceResult) about the specific place your queried.
+- `error: any` - an exception.
+
+### fetchFields
+
+Replaces getDetails when using Google Places 2025 udates. Retrieves information about a particular place ID.
+
+```js
+import usePlacesAutocomplete { fetchFields } from "use-places-autocomplete";
+
+const AutocompleteFields = () => {
+  const { suggestions, value, setValue } = usePlacesAutocomplete();
+
+  const handleChange = (e) => {
+    setValue(e.target.value);
+  };
+
+  const submit = () => {
+    const parameter = {
+      // uses properties of the new Place class: https://developers.google.com/maps/documentation/javascript/reference/place#Place
+      fields: ["displayName", "formattedAddress"],
+    };
+
+    fetchFields(parameter)
+      .then((place) => {
+        console.log("Name: ", place.displayName);
+        console.log("Address: ", place.formattedAddress);
+      })
+      .catch((error) => {
+        console.log("Error: ", error);
+      });
+  };
+
+  return (
+    <div>
+      <input value={value} onChange={handleChange} />
+      {/* Render dropdown */}
+      <button onClick={submit}>Submit Suggestion</button>
+    </div>
+  );
+}
+```
+
+`fetchFields` is an asynchronous function with the following API:
+
+- `parameter: object` - [the request](https://developers.google.com/maps/documentation/javascript/reference/place#FetchFieldsRequest) on the places `fetchFields()` method. You must supply a `fields` array using the Place properties you would like returned.
+- `{ place: Place } | null` - [the place instance](https://developers.google.com/maps/documentation/javascript/reference/place#Place) with the properties requested.
 - `error: any` - an exception.
 
 > ⚠️ warning, you are billed based on how much information you retrieve, So it is advised that you retrieve just what you need.
