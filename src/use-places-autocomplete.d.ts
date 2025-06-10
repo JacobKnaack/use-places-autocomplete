@@ -1,7 +1,8 @@
 declare module "use-places-autocomplete" {
   // Hook
   export type RequestOptions = Omit<
-    google.maps.places.AutocompletionRequest,
+    | google.maps.places.AutocompletionRequest
+    | google.maps.places.AutocompleteRequest,
     "input"
   >;
 
@@ -14,9 +15,12 @@ declare module "use-places-autocomplete" {
     callbackName?: string;
     defaultValue?: string;
     initOnMount?: boolean;
+    useLegacy?: boolean;
   }
 
-  export type Suggestion = google.maps.places.AutocompletePrediction;
+  export type Suggestion =
+    | google.maps.places.AutocompletePrediction
+    | google.maps.places.AutocompleteSuggestion;
 
   export type Status = `${google.maps.places.PlacesServiceStatus}` | "";
 

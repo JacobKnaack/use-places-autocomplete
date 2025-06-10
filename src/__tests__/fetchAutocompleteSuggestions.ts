@@ -1,4 +1,6 @@
-import fetchAutocompleteSuggestions from "../fetchAutocompleteSuggestions";
+import fetchAutocompleteSuggestions, {
+  getPlacePredictions,
+} from "../fetchAutocompleteSuggestions";
 
 describe("fetchAutocompleteSuggestions", () => {
   const mockResponse = {
@@ -37,5 +39,21 @@ describe("fetchAutocompleteSuggestions", () => {
     await expect(
       fetchAutocompleteSuggestions(mockRequest, mockApi)
     ).rejects.toThrow("API request failed");
+  });
+  it("Should return a array of predictions", () => {
+    const suggestions = [
+      {
+        placePrediction: {
+          placeId: "1",
+        },
+      },
+      {
+        placePrediction: {
+          placeId: "2",
+        },
+      },
+    ] as unknown as google.maps.places.AutocompleteSuggestion[];
+    const predictions = getPlacePredictions(suggestions);
+    expect(predictions).toEqual([{ placeId: "1" }, { placeId: "2" }]);
   });
 });

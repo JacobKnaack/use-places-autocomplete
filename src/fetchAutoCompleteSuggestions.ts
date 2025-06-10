@@ -6,6 +6,19 @@ export type PlacesLib = {
   };
 };
 
+export const getPlacePredictions = (
+  suggestions: google.maps.places.AutocompleteSuggestion[]
+): google.maps.places.PlacePrediction[] => {
+  const places: google.maps.places.PlacePrediction[] = [];
+  suggestions.forEach((suggestion) => {
+    const { placePrediction } = suggestion;
+    if (placePrediction) {
+      places.push(placePrediction);
+    }
+  });
+  return places;
+};
+
 /**
  * Calls the new Google Places AutocompleteSuggestion API and throws on error.
  * @param request The AutocompleteSuggestionInput request object.

@@ -3,7 +3,9 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import useLatest from "./useLatest";
 import _debounce from "./debounce";
 import createAutocompleteRequest from "./createAutocompleteRequest";
-import fetchAutocompleteSuggestions from "./fetchAutocompleteSuggestions";
+import fetchAutocompleteSuggestions, {
+  getPlacePredictions,
+} from "./fetchAutocompleteSuggestions";
 
 export interface HookArgs {
   requestOptions?: Omit<google.maps.places.AutocompletionRequest, "input">;
@@ -19,7 +21,7 @@ export interface HookArgs {
 
 type Suggestion =
   | google.maps.places.AutocompletePrediction
-  | google.maps.places.AutocompleteSuggestion;
+  | google.maps.places.PlacePrediction;
 
 type Status = `${google.maps.places.PlacesServiceStatus}` | "";
 
@@ -83,7 +85,7 @@ const usePlacesAutocomplete = ({
       return;
     }
 
-    if (!useLegacy) {
+    if (useLegacy === false) {
       asRef.current = (
         googleMapsRef.current?.places || window.google.maps.places
       ).AutocompleteSuggestion;
@@ -149,7 +151,7 @@ const usePlacesAutocomplete = ({
           return;
         }
       }
-      if (!useLegacy) {
+      if (useLegacy === false) {
         const request = createAutocompleteRequest(
           requestOptionsRef.current,
           val
@@ -159,7 +161,8 @@ const usePlacesAutocomplete = ({
             googleMapsRef.current?.places || window.google.maps.places
           ).AutocompleteSuggestion,
         })
-          .then((data) => {
+          .then((results) => {
+            const data = getPlacePredictions(results);
             setSuggestions({ loading: false, status: "OK", data });
             if (cache) {
               cachedData[val] = {
