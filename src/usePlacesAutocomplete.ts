@@ -5,7 +5,7 @@ import _debounce from "./debounce";
 import createAutocompleteRequest from "./createAutocompleteRequest";
 import fetchAutocompleteSuggestions, {
   getPlacePredictions,
-} from "./_fetchAutocompleteSuggestions";
+} from "./fetchAutocompleteSuggestions";
 
 export interface HookArgs {
   requestOptions?: Omit<google.maps.places.AutocompletionRequest, "input">;

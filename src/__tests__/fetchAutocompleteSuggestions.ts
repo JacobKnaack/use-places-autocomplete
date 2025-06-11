@@ -2,7 +2,7 @@ import fetchAutocompleteSuggestions, {
   getPlacePredictions,
   getPlaceDetails,
   PlaceDetailsError,
-} from "../_fetchAutocompleteSuggestions";
+} from "../fetchAutocompleteSuggestions";
 
 describe("fetchAutocompleteSuggestions", () => {
   const mockResponse = {
