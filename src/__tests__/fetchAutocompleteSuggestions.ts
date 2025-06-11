@@ -1,6 +1,8 @@
 import fetchAutocompleteSuggestions, {
   getPlacePredictions,
-} from "../fetchAutocompleteSuggestions";
+  getPlaceDetails,
+  PlaceDetailsError,
+} from "../_fetchAutocompleteSuggestions";
 
 describe("fetchAutocompleteSuggestions", () => {
   const mockResponse = {
@@ -55,5 +57,26 @@ describe("fetchAutocompleteSuggestions", () => {
     ] as unknown as google.maps.places.AutocompleteSuggestion[];
     const predictions = getPlacePredictions(suggestions);
     expect(predictions).toEqual([{ placeId: "1" }, { placeId: "2" }]);
+  });
+  it("Should be able to extract place details from a PlacePrediction", () => {
+    const placePrediction = {
+      placeId: "test-place-id",
+      text: { text: "Test Place" },
+      mainText: { text: "Test Main Text" },
+    } as unknown as google.maps.places.PlacePrediction;
+
+    const details = getPlaceDetails(placePrediction);
+    expect(details).toEqual({
+      place_id: "test-place-id",
+      description: "Test Place",
+      name: "Test Main Text",
+    });
+  });
+  it("Should throw an error if PlacePrediction is invalid", () => {
+    const invalidPlacePrediction =
+      {} as unknown as google.maps.places.PlacePrediction;
+    expect(() => getPlaceDetails(invalidPlacePrediction)).toThrow(
+      PlaceDetailsError
+    );
   });
 });
