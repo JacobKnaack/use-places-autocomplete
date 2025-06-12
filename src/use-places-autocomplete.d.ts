@@ -70,12 +70,6 @@ declare module "use-places-autocomplete" {
     };
   };
 
-  export type PlaceDetails = {
-    place_id: string;
-    description: string;
-    name: string | null;
-  };
-
   export function getPlacePredictions(
     suggestions: google.maps.places.AutocompleteSuggestion[]
   ): google.maps.places.PlacePrediction[];
@@ -122,4 +116,14 @@ declare module "use-places-autocomplete" {
   } | null>;
 
   export const fetchFields: (args: FetchFieldsArgs) => FetchFieldsResult;
+
+  export type PlacePredictionFields = {
+    place_id: string;
+    description: string;
+    name: string | null;
+  };
+
+  export const getPlacePredictionFields: (
+    placePrediction: google.maps.places.PlacePrediction
+  ) => PlacePredictionFields;
 }

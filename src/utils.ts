@@ -93,3 +93,23 @@ export const fetchFields = async (args: FetchFieldsArgs): FetchFieldsResult => {
     fields: args.fields,
   });
 };
+
+export type PlacePredictionFields = {
+  place_id: string;
+  description: string;
+  name: string | null;
+};
+export const getPlacePredictionsErr = `Invalid PlacePrediction object provided.`;
+export const getPlacePredictionFields = (
+  placePrediction: google.maps.places.PlacePrediction
+): PlacePredictionFields => {
+  try {
+    return {
+      place_id: placePrediction.placeId,
+      description: placePrediction.text.text,
+      name: placePrediction.mainText ? placePrediction.mainText.text : null,
+    };
+  } catch (error) {
+    throw new Error(getPlacePredictionsErr, { cause: error });
+  }
+};
