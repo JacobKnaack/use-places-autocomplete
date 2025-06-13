@@ -117,13 +117,16 @@ declare module "use-places-autocomplete" {
 
   export const fetchFields: (args: FetchFieldsArgs) => FetchFieldsResult;
 
-  export type PlacePredictionFields = {
+  export type LegacyPrediction = {
     place_id: string;
+    structured_formatting: {
+      main_text: string;
+      secondary_text: string;
+    };
     description: string;
-    name: string | null;
   };
 
-  export const getPlacePredictionFields: (
+  export const getLegacyPrediction: (
     placePrediction: google.maps.places.PlacePrediction
-  ) => PlacePredictionFields;
+  ) => LegacyPrediction;
 }

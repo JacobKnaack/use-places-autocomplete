@@ -210,12 +210,77 @@ const PlacesAutocomplete = () => {
 };
 ```
 
-## Choosing API Versions
+## Now Supporting Places 2025
 
-Now supporting the new Google Places API (2025). To use the new API make you have it activated in your Google developer account. Once activated you can opt-in to the new API features by specifying `useLegacy: false` in the hooks parameters:
+Please read the [API migration overview](https://developers.google.com/maps/documentation/places/web-service/legacy/migrate-overview) to get started, you must opt-in to the new API in order to use. Once activated you can opt-in to the new API features by specifying `useLegacy: false` in the hooks parameters:
 
 ```js
 usePlacesAutocomplete({ useLegacy: false });
+```
+
+By default the new API returns a PlacePrediction, but you can easily convert these to the legacy prediction object:
+
+```js
+import usePlacesAutocomplete, {
+  getGeocode,
+  getLatLng,
+  getLegacyPrediction, // use to convert PlacePrediction to something similar to AutocompletePrediction
+} from "use-places-autocomplete";
+import useOnclickOutside from "react-cool-onclickoutside";
+
+const PlacesAutocomplete = () => {
+  const {
+    ready,
+    value,
+    suggestions: { status, data },
+    setValue,
+    clearSuggestions,
+  } = usePlacesAutocomplete({
+    useLegacy: false, // Activate new API implementation
+  });
+  const ref = useOnclickOutside(() => {
+    clearSuggestions();
+  });
+
+  const handleInput = (e) => {
+    setValue(e.target.value);
+  };
+
+  const handleSelect =
+    ({ description }) =>
+    () => {
+      setValue(description, false);
+      clearSuggestions();
+    };
+
+  const renderSuggestions = () =>
+    // apply utility function to map new API results for quick refactoring
+    data.map(getLegacyPrediction).map((suggestion) => {
+      const {
+        place_id,
+        structured_formatting: { main_text, secondary_text },
+      } = suggestion;
+
+      return (
+        <li key={place_id} onClick={handleSelect(suggestion)}>
+          <strong>{main_text}</strong> <small>{secondary_text}</small>
+        </li>
+      );
+    });
+
+  return (
+    <div ref={ref}>
+      <input
+        value={value}
+        onChange={handleInput}
+        disabled={!ready}
+        placeholder="Where are you going?"
+      />
+      {/* We can use the "status" to decide whether we should display the dropdown or not */}
+      {status === "OK" && <ul>{renderSuggestions()}</ul>}
+    </div>
+  );
+};
 ```
 
 ## Lazily Initializing The Hook
@@ -565,7 +630,7 @@ const PlacesAutocomplete = () => {
 
 ### fetchFields
 
-Replaces getDetails when using Google Places 2025 udates. Retrieves information about a particular place ID.
+Replaces getDetails when using Google Places 2025 updates. Retrieves information about a particular place ID.
 
 ```js
 import usePlacesAutocomplete { fetchFields } from "use-places-autocomplete";

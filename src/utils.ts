@@ -52,8 +52,6 @@ type DetailsResult = Promise<google.maps.places.PlaceResult | null>;
 
 export const getDetailsErr =
   "💡 use-places-autocomplete: Please provide a place Id when using getDetails() either as a string or as part of an Autocomplete Prediction.";
-export const fetchFieldsErr =
-  "💡 use-places-autocomplete: Please provide a place Id when using fetchFields().";
 
 export const getDetails = (args: GetDetailsArgs): DetailsResult => {
   const PlacesService = new window.google.maps.places.PlacesService(
@@ -80,6 +78,9 @@ interface FetchFieldsArgs extends google.maps.places.FetchFieldsRequest {
 
 type FetchFieldsResult = Promise<{ place: google.maps.places.Place } | null>;
 
+export const fetchFieldsErr =
+  "💡 use-places-autocomplete: Please provide a place Id when using fetchFields().";
+
 export const fetchFields = async (args: FetchFieldsArgs): FetchFieldsResult => {
   if (!args.placeId) {
     console.error(getDetailsErr);
@@ -94,22 +95,34 @@ export const fetchFields = async (args: FetchFieldsArgs): FetchFieldsResult => {
   });
 };
 
-export type PlacePredictionFields = {
-  place_id: string;
-  description: string;
-  name: string | null;
+export type LegacyPrediction = {
+  place_id: string | null;
+  structured_formatting: {
+    main_text: string | null;
+    secondary_text: string | null;
+  };
+  description: string | null;
 };
-export const getPlacePredictionsErr = `Invalid PlacePrediction object provided.`;
-export const getPlacePredictionFields = (
+
+export const getLegacyPredictionErr = `Invalid PlacePrediction object provided.`;
+
+export const getLegacyPrediction = (
   placePrediction: google.maps.places.PlacePrediction
-): PlacePredictionFields => {
+): LegacyPrediction => {
   try {
     return {
-      place_id: placePrediction.placeId,
-      description: placePrediction.text.text,
-      name: placePrediction.mainText ? placePrediction.mainText.text : null,
+      place_id: placePrediction.placeId || null,
+      structured_formatting: {
+        main_text: placePrediction.mainText
+          ? placePrediction.mainText.text
+          : null,
+        secondary_text: placePrediction.secondaryText
+          ? placePrediction.secondaryText.text
+          : null,
+      },
+      description: placePrediction.text ? placePrediction.text.text : null,
     };
   } catch (error) {
-    throw new Error(getPlacePredictionsErr, { cause: error });
+    throw new Error(getLegacyPredictionErr, { cause: error });
   }
 };

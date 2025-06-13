@@ -5,7 +5,7 @@ import {
   getZipCode,
   getDetails,
   fetchFields,
-  getPlacePredictionFields,
+  getLegacyPrediction,
 } from "./utils";
 
 export default usePlacesAutocomplete;
@@ -15,5 +15,5 @@ export {
   getZipCode,
   getDetails,
   fetchFields,
-  getPlacePredictionFields,
+  getLegacyPrediction,
 };
