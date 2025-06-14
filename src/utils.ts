@@ -83,7 +83,7 @@ export const fetchFieldsErr =
 
 export const fetchFields = async (args: FetchFieldsArgs): FetchFieldsResult => {
   if (!args.placeId) {
-    console.error(getDetailsErr);
+    console.error(fetchFieldsErr);
     return Promise.reject(new Error(fetchFieldsErr));
   }
   const place = new window.google.maps.places.Place({

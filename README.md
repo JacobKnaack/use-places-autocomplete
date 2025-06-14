@@ -636,20 +636,23 @@ Replaces getDetails when using Google Places 2025 updates. Retrieves information
 import usePlacesAutocomplete { fetchFields } from "use-places-autocomplete";
 
 const AutocompleteFields = () => {
-  const { suggestions, value, setValue } = usePlacesAutocomplete();
+  const { suggestions, value, setValue } = usePlacesAutocomplete({ useLegacy: false });
 
   const handleChange = (e) => {
     setValue(e.target.value);
   };
 
   const submit = () => {
+    const placePrediction = suggestions.data[0]
+
     const parameter = {
+      placeId: placePrediction.placeId, // provided by PlacePrediction https://developers.google.com/maps/documentation/javascript/reference/autocomplete-data#PlacePrediction
       // uses properties of the new Place class: https://developers.google.com/maps/documentation/javascript/reference/place#Place
       fields: ["displayName", "formattedAddress"],
     };
 
     fetchFields(parameter)
-      .then((place) => {
+      .then(({ place }) => {
         console.log("Name: ", place.displayName);
         console.log("Address: ", place.formattedAddress);
       })
